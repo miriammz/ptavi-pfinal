@@ -7,7 +7,16 @@ import sys
 import SocketServer
 import os
 import time
+import socket
 
+
+def MensajesLog(mensaje):
+	mensaje = mensaje.split("")
+    fich = open(cHandler.log, "a")
+    for cont in mensaje:
+        msg = str(time.time()) + " " + str(cont) + " " + "\n"
+    fich.write(msg)
+    fich.close()
 
 class ServerHandler(ContentHandler):
 	
@@ -19,7 +28,6 @@ class ServerHandler(ContentHandler):
 		    "regproxy": ["ip", "puerto"],
 			"log": ["path"],
 			"audio": ["path"]}
-
         self.lista = []
 
     def startElement(self, etiqueta, atributo):
@@ -31,9 +39,13 @@ class ServerHandler(ContentHandler):
 
 class EchoHandler(SocketServer.DatagramRequestHandler):
 
+
+
+
 if __name__ == "__main__":
 	if len(sys.argv) != 2:
         print("Usage: python uaserver.py config")
+		sys.exit()
 	# parseamos el archivo ua2.xml
 	parser = make_parser()
     cHandler = ServerHandler()
