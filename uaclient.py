@@ -12,7 +12,7 @@ import socket
 
 def MensajesLog(mensaje):
     mensaje = mensaje.split("")
-    fich = open(cHandler.log, "a")
+    fich = open(cHandler.log_path, "a")
     for cont in mensaje:
         msg = str(time.time()) + " " + str(cont) + " " + "\n"
     fich.write(msg)
@@ -108,7 +108,6 @@ if __name__ == "__main__":
         recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
         MensajesLog(recibido)
     elif METODO == "INVITE":
-        #datos = data.split(" ")
         if data == ("SIP/2.0 100 Trying" + '\r\n\r\n' + "SIP/2.0 180 Ringing" +
                     '\r\n\r\n' + "SIP/2.0 200 OK" + '\r\n\r\n'):
             LINE = "ACK sip:" + OPCION + " SIP/2.0"
@@ -125,11 +124,10 @@ if __name__ == "__main__":
             cHandler.rtpaudio_puerto + ": audio"
             MensajeLog(audio)
             os.system(encontrado)
+            audio = "Sent to " + cHandler.uaserver_ip + ":" +
+            cHandler.rtpaudio_puerto + ": envío completado"
             print "Envío completado"
             print 'Recibido -- ', data
-            recibido2 = "Received from " + IP + ":" + PORT + ":" +
-            "SIP/2.0 200 OK"
-            MensajesLog(recibido2)
 
     elif METODO == "BYE":
         recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
