@@ -47,29 +47,45 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
         line2 = line.split(" ")
 		IP = cHandler.regproxy_ip
 		PORT = str(cHandler.regproxy_puerto)
+		line2[0] = ['INVITE', 'ACK', 'BYE', 'CANCEL', 'OPTIONS', 'REGISTER']
         print "El cliente nos manda " + line
         if line2[0] == "INVITE":
 			recibido = "Received from " + IP + ":" + PORT + ": INVITE" 
 			MensajesLog(recibido)
+			envio = "Sent to " + IP + ":" + PORT + ": " + "SIP/2.0 100 Trying"
+			+ " SIP/2.0 180 Ringing" + " SIP/2.0 200 OK"
+			MensajesLog(envio)
             self.wfile.write("SIP/2.0 100 Trying" + '\r\n\r\n' +
                              "SIP/2.0 180 Ringing" + '\r\n\r\n' +
                              "SIP/2.0 200 OK" + '\r\n\r\n')
         elif line2[0] == "BYE":
 			recibido = "Received from " + IP + ":" + PORT + ": BYE"
 			MensajesLog(recibido)
-            self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
+			envio = "Sent to " + IP + ":" + PORT + ": " + "SIP/2.0 200 OK"
+			MensajesLog(envio)
+			self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
         elif line2[0] == "ACK":
 			recibido = "Received from " + IP + ":" + PORT + ": ACK"
 			MensajesLog(recibido)
-            self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
-            encontrado = "./mp32rtp -i " + IP + " -p 23032 < " + FICH_AUDIO
+            encontrado = "./mp32rtp -i " + IP + " -p " +
+            cHandler.rtpaudio_puerto + " < " + cHandler.audio_path
             print "Enviando audio..."
+            audio = "Sent to " + cHandler.uaserver_ip + ":" +
+            cHandler.rtpaudio_puerto + ": audio"
+            MensajesLog(audio)
             os.system(encontrado)
             print "Envío completado"
+            print 'Recibido -- ', data
         elif line2[0] != "INVITE" and line2[0] != "BYE" and line2[0] != "ACK":
-            self.wfile.write("SIP/2.0 405 Method Not Allowed")
+            envio = "Sent to " + IP + ":" + PORT + ": " +
+			"SIP/2.0 405 Method Not Allowed"
+			MensajesLog(envio)
+			self.wfile.write("SIP/2.0 405 Method Not Allowed" + '\r\n\r\n')
         else:
-            self.wfile.write("SIP/2.0 400 Bad Request")
+            envio = "Sent to " + IP + ":" + PORT + ": " +
+			"SIP/2.0 400 Bad Request"
+			MensajesLog(envio)
+			self.wfile.write("SIP/2.0 400 Bad Request" + '\r\n\r\n')
         while 1:
             # Si no hay más líneas salimos del bucle infinito
             if not line or line2:
