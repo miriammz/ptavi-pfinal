@@ -35,26 +35,53 @@ class ProxyHandler(ContentHandler):
                 dic[attr] = (atributo.get(attr, ""))
             self.lista.append([etiqueta, dic])
 
+	dicc = {}
+
+
 class ProxyRegistrar(SocketServer.DatagramRequestHandler):
 
-    def handle(self):
-
-		def register2file():
+	def register2file(self):
             fich = open(cHandler.database_path, "a")
-            fich.write("User\tIP\tExpires\n")
-            expire = time.strftime('%Y-­%m-­%d %H:%M:%S',
+            fich.write("User\tIP\tPuerto\tExpires\n")
+			for cliente in self.dicc.items():
+            	hora = time.strftime('%Y-­%m-­%d %H:%M:%S',
                              time.gmtime(time.time()))
-            fich.write(cliente + '\t' + IP + '\t' +  expire)
+            	fich.write(cliente + '\t' + IP + '\t' +  PUERTO + '\t' + hora)
+			fich.close()
 
-		# Escribe dirección y puerto del cliente (de tupla client_address)
+    def handle(self):
         line = self.rfile.read()
-        IP = str(self.client_address[0])
-        line2 = line.split(" ")
-		usuario = line2[1].split(":")
+		line2 = line.split(" ")
+		line3 = line2.split(":")
+        self.dicc[cliente] = IP
+		cliente = line2[1].split(":")[1]
+		PUERTO = str(line2[1].split(":")[2])
+		EXPIRES = line3[3]
+		tiempo = time.time() + int(EXPIRES)
+        hora_actual = time.time()
         print "El cliente nos manda " + line
 
 		if line2[0] == "REGISTER":
-        
+			registrado = "Received from " + IP + ":" + PUERTO + ": REGISTER" 
+			MensajesLog(registrado)
+			self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
+			enviado = "Sent to " + IP + ":" + PUERTO ": 200 OK"
+			MensajesLog(enviado)
+			if EXPIRES == 0:
+				if cliente in self.dicc:
+					# borramos al usuario
+					del self.dicc[cliente]
+					self.register2file()
+			else:
+				self.dicc[cliente] = IP + ", " + str(tiempo)
+				register2file(cliente)
+
+		    for elemento, valor in self.dicc.items():
+		        hora = valor.split(",")[-1]
+		        if hora_actual > hora:
+		            del self.dicc[elemento]
+		            self.register2file()
+
 		elif line2[0] == "INVITE":
             self.wfile.write("SIP/2.0 100 Trying" + '\r\n\r\n' +
                              "SIP/2.0 180 Ringing" + '\r\n\r\n' +
@@ -62,6 +89,7 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
 
         elif line2[0] == "BYE":
             self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
+			
 
         #falta SIP/2.0 404 User Not Found: usuario no registrado
         elif line2[0] != "INVITE" and line2[0] != "BYE" and line2[0] != "ACK":
