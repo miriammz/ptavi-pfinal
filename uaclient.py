@@ -80,11 +80,16 @@ if __name__ == "__main__":
         MensajesLog(envio)
     elif METODO == "INVITE":
         LINE = "INVITE sip:" + OPCION + " SIP/2.0" + '\r\n'
+        LINE2 = "Content-Type: application/sdp" + '\r\n\r\n' + "v=0" + '\r\n' +
+        "o=" + cHandler.account_username + " " + IP + '\r\n' + "s=misesion" +
+        '\r\n' + "t=0" + '\r\n' + "m=audio " + cHandler.rtpaudio_puerto +
+        " RTP"
+        print "Enviando: " + LINE + LINE2
+        my_socket.send(LINE + LINE2 + '\r\n')
+        LINE = "INVITE sip:" + OPCION + " SIP/2.0" + '\r\n'
         LINE2 = "Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' +
         "o=" + cHandler.account_username + " " + IP + '\n' + "s=misesion" +
         '\n' + "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto + " RTP"
-        print "Enviando: " + LINE + LINE2
-        my_socket.send(LINE + LINE2 + '\r\n')
         envio = "Sent to " + IP + ":" + PORT + ": " + LINE + LINE2
         MensajesLog(envio)
     elif METODO == "BYE":
@@ -108,14 +113,19 @@ if __name__ == "__main__":
         recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
         MensajesLog(recibido)
     elif METODO == "INVITE":
+        SDP = "Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' + "o=" +
+        cHandler.account_username + " " + IP + '\n' + "s=misesion" +
+        '\n' + "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto + " RTP"
         if data == ("SIP/2.0 100 Trying" + '\r\n\r\n' + "SIP/2.0 180 Ringing" +
-                    '\r\n\r\n' + "SIP/2.0 200 OK" + '\r\n\r\n'):
-            LINE = "ACK sip:" + OPCION + " SIP/2.0"
-            print "Enviando: " + LINE
+                    '\r\n\r\n' + "SIP/2.0 200 OK" + '\r\n\r\n' + SDP):
             recibido = "Received from " + IP + ":" + PORT + ":" +
             "SIP/2.0 100 Trying " + "SIP/2.0 180 Ringing " + "SIP/2.0 200 OK"
             MensajesLog(recibido)
+            LINE = "ACK sip:" + OPCION + " SIP/2.0"
+            print "Enviando: " + LINE
             my_socket.send(LINE + '\r\n\r\n')
+            envio = "Sent to " + IP + ":" + PORT + ": ACK"
+            MensajesLog(envio)
             data = my_socket.recv(1024)
             encontrado = "./mp32rtp -i " + IP + " -p " +
             cHandler.rtpaudio_puerto + " < " + cHandler.audio_path
