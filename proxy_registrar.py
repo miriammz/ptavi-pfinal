@@ -60,19 +60,8 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
         EXPIRES = line3[3]
         tiempo = time.time() + int(EXPIRES)
         hora_actual = time.time()
-        #IP_DESTINO =
-        #PUERTO_DESTINO =
-        #self.my_socket.connect((ip_server, puerto_server)
+
 """
-self.my_socket.send(reenviar)
-
-ip_server :  este dato lo obtengo de la información SDP del invite
-
-puerto_server : puedo obtenerlo del mensaje Register
-
-reenviar = mensaje INVITE+SDP recibido por el cliente
-
-
 2. ip_server y puerto_server los obtienes de un registro anterior del receptor
 del INVITE. Si no está registrado, hay que devolver un 404.
 """
@@ -216,9 +205,7 @@ if __name__ == "__main__":
     # Comprobamos que introducimos el numero correcto de parametros y que
     # existe el fichero de audio
     if len(sys.argv) != 2:
-        error = "Usage: python proxy_registrar.py config"
-        MensajesLog(error)
-        sys.exit()
+        sys.exit("Usage: python proxy_registrar.py config")
 
     # parseamos el archivo ua2.xml
     parser = make_parser()
