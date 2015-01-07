@@ -113,9 +113,7 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        error = "Usage: python uaserver.py config"
-        MensajesLog(error)
-        sys.exit(error)
+        sys.exit("Usage: python uaserver.py config")
     else:
         comienzo = "Listening..."
         print comienzo
