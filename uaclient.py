@@ -41,10 +41,9 @@ class ClientHandler(ContentHandler):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python uaclient.py config method option")
         error = "Usage: python uaclient.py config method option"
-        MensajesLog(error)
-        sys.exit()
+    MensajesLog(error)
+    sys.exit(error)
     # parseamos el archivo ua1.xml
     parser = make_parser()
     cHandler = ClientHandler()
@@ -104,10 +103,10 @@ if __name__ == "__main__":
         data = my_socket.recv(1024)
         print 'Recibido -- ', data
     except socket.error:
-        print "Error: No server listening at " + IP + " port " + PORT
         error = sys.exit("Error: No server listening at " + IP +
                          " port " + PORT)
-        MensajesLog(error)
+        print error
+    MensajesLog(error)
 
     if METODO == "REGISTER":
         recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
