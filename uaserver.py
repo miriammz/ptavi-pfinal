@@ -42,14 +42,10 @@ class ServerHandler(ContentHandler):
 class EchoHandler(SocketServer.DatagramRequestHandler):
 
     def handle(self):
-        # Escribe dirección y puerto del cliente (de tupla client_address)
         line = self.rfile.read()
         line2 = line.split(" ")
-        IP = str(self.client_address[0])
-        PORT = str(self.client_address[1])
-        print line
-        IP_server = line2[7]
-        PORT_server = line2[11]
+        IP = cHandler.regproxy_ip
+        PORT = str(cHandler.regproxy_puerto)
         line2[0] = ['INVITE', 'ACK', 'BYE', 'CANCEL', 'OPTIONS', 'REGISTER']
         print "El cliente nos manda " + line
 
@@ -65,13 +61,13 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             cHandler.account_username + " " + IP + '\n' + "s=misesion" + '\n' +
             "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto + " RTP"
             MensajesLog(envio)
+            SDP = "Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' +
+            "o=" + cHandler.account_username + " " + IP + '\n' + "s=misesion" +
+            '\n' + "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto +
+            " RTP"
             self.wfile.write("SIP/2.0 100 Trying" + '\r\n\r\n' +
                              "SIP/2.0 180 Ringing" + '\r\n\r\n' +
-                             "SIP/2.0 200 OK" + '\r\n\r\n')
-            self.wfile.write("Content-Type: application/sdp" + '\r\n' + "v=0" +
-            '\n' + "o=" + cHandler.account_username + " " + IP + '\n' +
-            "s=misesion" + '\n' + "t=0" + '\n' + "m=audio " +
-            cHandler.rtpaudio_puerto + " RTP")
+                             "SIP/2.0 200 OK" + '\r\n\r\n' + SDP)
 
         elif line2[0] == "BYE":
             recibido = "Received from " + IP + ":" + PORT + ": BYE"
@@ -81,12 +77,10 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
 
         elif line2[0] == "ACK":
-            self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
-            recibido = "Received from " + IP_server + ":" + PORT_server +
-            ": ACK"
+            recibido = "Received from " + IP + ":" + PORT + ": ACK"
             MensajesLog(recibido)
-            encontrado = "./mp32rtp -i " + IP_server + " -p " +
-            PORT_server + " < " + cHandler.audio_path
+            encontrado = "./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
+            cHandler.rtpaudio_puerto + " < " + cHandler.audio_path
             print "Enviando audio..."
             audio = "Sent to " + cHandler.uaserver_ip + ":" +
             cHandler.rtpaudio_puerto + ": enviando audio"
@@ -114,20 +108,18 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             self.wfile.write("SIP/2.0 400 Bad Request" + '\r\n\r\n')
 
         while 1:
-            # Si no hay más líneas salimos del bucle infinito
             if not line or line2:
                 break
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python uaserver.py config")
         error = "Usage: python uaserver.py config"
         MensajesLog(error)
-        sys.exit()
+        sys.exit(error)
     else:
-        print "Listening..."
         comienzo = "Listening..."
-        MensajesLog(comienzo)
+        print comienzo
+    MensajesLog(comienzo)
 
     # parseamos el archivo ua2.xml
     parser = make_parser()
