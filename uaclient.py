@@ -41,9 +41,7 @@ class ClientHandler(ContentHandler):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        error = "Usage: python uaclient.py config method option"
-    MensajesLog(error)
-    sys.exit(error)
+        sys.exit("Usage: python uaclient.py config method option")
     # parseamos el archivo ua1.xml
     parser = make_parser()
     cHandler = ClientHandler()
@@ -106,7 +104,7 @@ if __name__ == "__main__":
         error = sys.exit("Error: No server listening at " + IP +
                          " port " + PORT)
         print error
-    MensajesLog(error)
+        MensajesLog(error)
 
     if METODO == "REGISTER":
         recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
