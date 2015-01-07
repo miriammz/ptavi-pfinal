@@ -126,7 +126,7 @@ if __name__ == "__main__":
             envio = "Sent to " + IP + ":" + PORT + ": ACK"
             MensajesLog(envio)
             data = my_socket.recv(1024)
-            encontrado = "./mp32rtp -i " + IP + " -p " +
+            encontrado = "./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
             cHandler.rtpaudio_puerto + " < " + cHandler.audio_path
             print "Enviando audio..."
             audio = "Sent to " + cHandler.uaserver_ip + ":" +
@@ -135,6 +135,7 @@ if __name__ == "__main__":
             os.system(encontrado)
             audio = "Sent to " + cHandler.uaserver_ip + ":" +
             cHandler.rtpaudio_puerto + ": envío completado"
+            MensajesLog(audio)
             print "Envío completado"
             print 'Recibido -- ', data
 
