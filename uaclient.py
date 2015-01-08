@@ -11,10 +11,9 @@ import socket
 
 
 def MensajesLog(mensaje):
-    mensaje = mensaje.split("")
-    fich = open(cHandler.log_path, "a")
-    for cont in mensaje:
-        msg = str(time.time()) + " " + str(cont) + " " + "\n"
+    mensaje = mensaje.split(" ")
+    fich = open(cHandler.log, "a")
+    msg = str(time.time()) + " " + str(mensaje) + " " + "\n"
     fich.write(msg)
     fich.close()
 
@@ -22,21 +21,32 @@ def MensajesLog(mensaje):
 class ClientHandler(ContentHandler):
 
     def __init__(self):
-        self.etiquetas = {
-            "account": ["username", "passwd"],
-            "uaserver": ["ip", "puerto"],
-            "rtpaudio": ["puerto"],
-            "regproxy": ["ip", "puerto"],
-            "log": ["path"],
-            "audio": ["path"]}
-        self.lista = []
+        self.username = ""
+        self.passwd = ""
+        self.uaserver_ip = ""
+        self.uaserver_puerto = 0
+        self.rtp_puerto = 0
+        self.regproxy_ip = ""
+        self.regproxy_puerto = 0
+        self.log = ""
+        self.audio = ""
 
-    def startElement(self, etiqueta, atributo):
-        if etiqueta in self.etiquetas:
-            dic = {}
-            for attr in self.etiquetas[etiqueta]:
-                dic[attr] = (atributo.get(attr, ""))
-            self.lista.append([etiqueta, dic])
+    def startElement(self, name, attrs):
+        if name == "account":
+            self.account_username = attrs.get("username", "")
+            self.account_passwd = attrs.get("passwd", "")
+        elif name == "uaserver":
+            self.uaserver_ip = attrs.get("ip", "127.0.0.1")
+            self.uaserver_puerto = attrs.get("puerto", "")
+        elif name == "rtpaudio":
+            self.rtp_puerto = attrs.get("puerto", "")
+        elif name == "regproxy":
+            self.regproxy_ip = attrs.get("ip", "")
+            self.regproxy_puerto = attrs.get("puerto", "")
+        elif name == "log":
+            self.log = attrs.get("path", "")
+        elif name == "audio":
+            self.audio = attrs.get("path", "")
 
 
 if __name__ == "__main__":
@@ -54,7 +64,7 @@ if __name__ == "__main__":
 
     # Dirección IP del servidor y métodos
     IP = cHandler.regproxy_ip
-    PORT = str(cHandler.regproxy_puerto)
+    PORT = int(cHandler.regproxy_puerto)
     METODO = ["REGISTER", "INVITE", "BYE"]
 
     # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
@@ -62,31 +72,32 @@ if __name__ == "__main__":
     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     my_socket.connect((IP, PORT))
 
-    LINE, LINE2 = ""
+    #LINE, LINE2 = ""
     comienzo = "Starting..."
     MensajesLog(comienzo)
     #creamos LINE y LINE2 segun el tipo del metodo que pasamos como argumento
     #para hacer el envío
     if METODO == "REGISTER":
-        LINE = "REGISTER sip:" + cHandler.account_username +
-        ":" + cHandler.uaserver_puerto + " SIP/2.0" + '\r\n'
-        LINE2 = "Expires: " + OPCION + '\r\n'
+        LINE = ("REGISTER sip:" + cHandler.account_username +
+                ":" + cHandler.uaserver_puerto + " SIP/2.0" + '\r\n')
+        LINE2 = ("Expires: " + OPCION + '\r\n')
         print "Enviando: " + LINE + LINE2
         my_socket.send(LINE + LINE2 + '\r\n')
         envio = "Sent to " + IP + ":" + PORT + ": " + LINE + LINE2
         MensajesLog(envio)
     elif METODO == "INVITE":
         LINE = "INVITE sip:" + OPCION + " SIP/2.0" + '\r\n'
-        LINE2 = "Content-Type: application/sdp" + '\r\n\r\n' + "v=0" + '\r\n' +
-        "o=" + cHandler.account_username + " " + IP + '\r\n' + "s=misesion" +
-        '\r\n' + "t=0" + '\r\n' + "m=audio " + cHandler.rtpaudio_puerto +
-        " RTP"
+        LINE2 = ("Content-Type: application/sdp" + '\r\n\r\n' + "v=0" + '\r\n'
+                 + "o=" + cHandler.account_username + " " + IP + '\r\n' +
+                 "s=misesion" + '\r\n' + "t=0" + '\r\n' + "m=audio " +
+                 cHandler.rtpaudio_puerto + " RTP")
         print "Enviando: " + LINE + LINE2
         my_socket.send(LINE + LINE2 + '\r\n')
         LINE = "INVITE sip:" + OPCION + " SIP/2.0" + '\r\n'
-        LINE2 = "Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' +
-        "o=" + cHandler.account_username + " " + IP + '\n' + "s=misesion" +
-        '\n' + "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto + " RTP"
+        LINE2 = ("Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' +
+                 "o=" + cHandler.account_username + " " + IP + '\n' +
+                 "s=misesion" + '\n' + "t=0" + '\n' + "m=audio " +
+                 cHandler.rtpaudio_puerto + " RTP")
         envio = "Sent to " + IP + ":" + PORT + ": " + LINE + LINE2
         MensajesLog(envio)
     elif METODO == "BYE":
@@ -110,13 +121,15 @@ if __name__ == "__main__":
         recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
         MensajesLog(recibido)
     elif METODO == "INVITE":
-        SDP = "Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' + "o=" +
-        cHandler.account_username + " " + IP + '\n' + "s=misesion" +
-        '\n' + "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto + " RTP"
+        SDP = ("Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' + "o=" +
+               cHandler.account_username + " " + IP + '\n' + "s=misesion" +
+               '\n' + "t=0" + '\n' + "m=audio " + cHandler.rtpaudio_puerto +
+               " RTP")
         if data == ("SIP/2.0 100 Trying" + '\r\n\r\n' + "SIP/2.0 180 Ringing" +
                     '\r\n\r\n' + "SIP/2.0 200 OK" + '\r\n\r\n' + SDP):
-            recibido = "Received from " + IP + ":" + PORT + ":" +
-            "SIP/2.0 100 Trying " + "SIP/2.0 180 Ringing " + "SIP/2.0 200 OK"
+            recibido = ("Received from " + IP + ":" + PORT + ":" +
+                        "SIP/2.0 100 Trying " + "SIP/2.0 180 Ringing " +
+                        "SIP/2.0 200 OK")
             MensajesLog(recibido)
             LINE = "ACK sip:" + OPCION + " SIP/2.0"
             print "Enviando: " + LINE
@@ -124,15 +137,16 @@ if __name__ == "__main__":
             envio = "Sent to " + IP + ":" + PORT + ": ACK"
             MensajesLog(envio)
             data = my_socket.recv(1024)
-            encontrado = "./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
-            cHandler.rtpaudio_puerto + " < " + cHandler.audio_path
+            encontrado = ("./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
+                          cHandler.rtpaudio_puerto + " < " +
+                          cHandler.audio_path)
             print "Enviando audio..."
-            audio = "Sent to " + cHandler.uaserver_ip + ":" +
-            cHandler.rtpaudio_puerto + ": audio"
+            audio = ("Sent to " + cHandler.uaserver_ip + ":" +
+                     cHandler.rtpaudio_puerto + ": audio")
             MensajeLog(audio)
             os.system(encontrado)
-            audio = "Sent to " + cHandler.uaserver_ip + ":" +
-            cHandler.rtpaudio_puerto + ": envío completado"
+            audio = ("Sent to " + cHandler.uaserver_ip + ":" +
+                     cHandler.rtpaudio_puerto + ": envío completado")
             MensajesLog(audio)
             print "Envío completado"
             print 'Recibido -- ', data
