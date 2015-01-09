@@ -20,9 +20,9 @@
 
 <ua>
   <account username="miriammz@urjc.es" passwd=""></account>
-  <uaserver ip="127.0.0.1" puerto="2222"></uaserver>
+  <uaserver ip="127.0.0.1" puerto="8888"></uaserver>
   <rtpaudio puerto="7777"></rtpaudio>
   <regproxy ip="127.0.0.1" puerto="6666"></regproxy>
-  <log path="seguimientoua2.txt"></log>
+  <log path="fichlogua2.txt"></log>
   <audio path="cancion.mp3"></audio>
 </ua>
