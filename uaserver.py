@@ -31,22 +31,22 @@ class ServerHandler(ContentHandler):
         self.log = ""
         self.audio = ""
 
-    def startElement(self, name, attrs):
-        if name == "account":
-            self.account_username = attrs.get("username", "")
-            self.account_passwd = attrs.get("passwd", "")
-        elif name == "uaserver":
-            self.uaserver_ip = attrs.get("ip", "127.0.0.1")
-            self.uaserver_puerto = attrs.get("puerto", "")
-        elif name == "rtpaudio":
-            self.rtp_puerto = attrs.get("puerto", "")
-        elif name == "regproxy":
-            self.regproxy_ip = attrs.get("ip", "")
-            self.regproxy_puerto = attrs.get("puerto", "")
-        elif name == "log":
-            self.log = attrs.get("path", "")
-        elif name == "audio":
-            self.audio = attrs.get("path", "")
+    def startElement(self, etiqueta, atributo):
+        if etiqueta == "account":
+            self.account_username = atributo.get("username", "")
+            self.account_passwd = atributo.get("passwd", "")
+        elif etiqueta == "uaserver":
+            self.uaserver_ip = atributo.get("ip", "127.0.0.1")
+            self.uaserver_puerto = atributo.get("puerto", "")
+        elif etiqueta == "rtpaudio":
+            self.rtp_puerto = atributo.get("puerto", "")
+        elif etiqueta == "regproxy":
+            self.regproxy_ip = atributo.get("ip", "")
+            self.regproxy_puerto = atributo.get("puerto", "")
+        elif etiqueta == "log":
+            self.log = atributo.get("path", "")
+        elif etiqueta == "audio":
+            self.audio = atributo.get("path", "")
 
 
 class EchoHandler(SocketServer.DatagramRequestHandler):
