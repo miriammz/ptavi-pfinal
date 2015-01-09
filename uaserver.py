@@ -52,18 +52,14 @@ class ServerHandler(ContentHandler):
 class EchoHandler(SocketServer.DatagramRequestHandler):
 
     def handle(self):
-        print "hola"
         line = self.rfile.read()
-        print line
         line2 = line.split(" ")
-        print line2
         IP = cHandler.regproxy_ip
         PORT = int(cHandler.regproxy_puerto)
         line2[0] = ['INVITE', 'ACK', 'BYE', 'CANCEL', 'OPTIONS', 'REGISTER']
         print "El cliente nos manda " + line
-        print line2[0]
+
         if line2[0] == "INVITE":
-            print "4444444444444444444444"
             recibido = "Received from " + IP + ":" + str(PORT) + ": INVITE"
             MensajesLog(recibido)
             envio = ("Sent to " + IP + ":" + str(PORT) + ": " +
@@ -87,7 +83,6 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                              "SIP/2.0 200 OK" + '\r\n\r\n' + SDP)
 
         elif line2[0] == "BYE":
-            print "5555555555555555555555"
             recibido = "Received from " + IP + ":" + str(PORT) + ": BYE"
             MensajesLog(recibido)
             envio = "Sent to " + IP + ":" + str(PORT) + ": " + "SIP/2.0 200 OK"
@@ -95,7 +90,6 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
 
         elif line2[0] == "ACK":
-            print "33333333333333333333"
             recibido = "Received from " + IP + ":" + str(PORT) + ": ACK"
             MensajesLog(recibido)
             encontrado = ("./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
@@ -112,7 +106,6 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             print 'Recibido -- ', data
 
         elif line2[0] != "INVITE" and line2[0] != "BYE" and line2[0] != "ACK":
-            print "222222222222222222"
             recibido = ("Received from " + IP + ":" + str(PORT) + ": " +
                         line2[0])
             MensajesLog(recibido)
@@ -122,7 +115,6 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             self.wfile.write("SIP/2.0 405 Method Not Allowed" + '\r\n\r\n')
 
         else:
-            print "111111111111111111"
             recibido = ("Received from " + IP + ":" + str(PORT) + ": " +
                         line2[0])
             MensajesLog(recibido)
