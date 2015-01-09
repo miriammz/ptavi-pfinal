@@ -31,22 +31,22 @@ class ClientHandler(ContentHandler):
         self.log = ""
         self.audio = ""
 
-    def startElement(self, name, attrs):
-        if name == "account":
-            self.account_username = attrs.get("username", "")
-            self.account_passwd = attrs.get("passwd", "")
-        elif name == "uaserver":
-            self.uaserver_ip = attrs.get("ip", "127.0.0.1")
-            self.uaserver_puerto = attrs.get("puerto", "")
-        elif name == "rtpaudio":
-            self.rtp_puerto = attrs.get("puerto", "")
-        elif name == "regproxy":
-            self.regproxy_ip = attrs.get("ip", "")
-            self.regproxy_puerto = attrs.get("puerto", "")
-        elif name == "log":
-            self.log = attrs.get("path", "")
-        elif name == "audio":
-            self.audio = attrs.get("path", "")
+    def startElement(self, etiqueta, atributo):
+        if etiqueta == "account":
+            self.account_username = atributo.get("username", "")
+            self.account_passwd = atributo.get("passwd", "")
+        elif etiqueta == "uaserver":
+            self.uaserver_ip = atributo.get("ip", "127.0.0.1")
+            self.uaserver_puerto = atributo.get("puerto", "")
+        elif etiqueta == "rtpaudio":
+            self.rtpaudio_puerto = atributo.get("puerto", "")
+        elif etiqueta == "regproxy":
+            self.regproxy_ip = atributo.get("ip", "")
+            self.regproxy_puerto = atributo.get("puerto", "")
+        elif etiqueta == "log":
+            self.log = atributo.get("path", "")
+        elif etiqueta == "audio":
+            self.audio = atributo.get("path", "")
 
 
 if __name__ == "__main__":
@@ -65,7 +65,6 @@ if __name__ == "__main__":
     # Dirección IP del servidor y métodos
     IP = cHandler.regproxy_ip
     PORT = int(cHandler.regproxy_puerto)
-    METODO = ["REGISTER", "INVITE", "BYE"]
 
     # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
     my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -75,6 +74,7 @@ if __name__ == "__main__":
     #LINE, LINE2 = ""
     comienzo = "Starting..."
     MensajesLog(comienzo)
+    print comienzo
     #creamos LINE y LINE2 segun el tipo del metodo que pasamos como argumento
     #para hacer el envío
     if METODO == "REGISTER":
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         LINE2 = ("Expires: " + OPCION + '\r\n')
         print "Enviando: " + LINE + LINE2
         my_socket.send(LINE + LINE2 + '\r\n')
-        envio = "Sent to " + IP + ":" + PORT + ": " + LINE + LINE2
+        envio = "Sent to " + IP + ":" + str(PORT) + ": " + LINE + LINE2
         MensajesLog(envio)
     elif METODO == "INVITE":
         LINE = "INVITE sip:" + OPCION + " SIP/2.0" + '\r\n'
@@ -98,13 +98,13 @@ if __name__ == "__main__":
                  "o=" + cHandler.account_username + " " + IP + '\n' +
                  "s=misesion" + '\n' + "t=0" + '\n' + "m=audio " +
                  cHandler.rtpaudio_puerto + " RTP")
-        envio = "Sent to " + IP + ":" + PORT + ": " + LINE + LINE2
+        envio = "Sent to " + IP + ":" + str(PORT) + ": " + LINE + LINE2
         MensajesLog(envio)
     elif METODO == "BYE":
         LINE = "BYE sip:" + OPCION + " SIP/2.0" + '\r\n'
         print "Enviando: " + LINE
         my_socket.send(LINE + '\r\n')
-        envio = "Sent to " + IP + ":" + PORT + ": " + LINE
+        envio = "Sent to " + IP + ":" + str(PORT) + ": " + LINE
         MensajesLog(envio)
 
     #hacemos la recepción
@@ -118,7 +118,8 @@ if __name__ == "__main__":
         MensajesLog(error)
 
     if METODO == "REGISTER":
-        recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
+        recibido = ("Received from " + IP + ":" + str(PORT) + ":" +
+                    "SIP/2.0 200 OK")
         MensajesLog(recibido)
     elif METODO == "INVITE":
         SDP = ("Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' + "o=" +
@@ -127,14 +128,14 @@ if __name__ == "__main__":
                " RTP")
         if data == ("SIP/2.0 100 Trying" + '\r\n\r\n' + "SIP/2.0 180 Ringing" +
                     '\r\n\r\n' + "SIP/2.0 200 OK" + '\r\n\r\n' + SDP):
-            recibido = ("Received from " + IP + ":" + PORT + ":" +
+            recibido = ("Received from " + IP + ":" + str(PORT) + ":" +
                         "SIP/2.0 100 Trying " + "SIP/2.0 180 Ringing " +
                         "SIP/2.0 200 OK")
             MensajesLog(recibido)
             LINE = "ACK sip:" + OPCION + " SIP/2.0"
             print "Enviando: " + LINE
             my_socket.send(LINE + '\r\n\r\n')
-            envio = "Sent to " + IP + ":" + PORT + ": ACK"
+            envio = "Sent to " + IP + ":" + str(PORT) + ": ACK"
             MensajesLog(envio)
             data = my_socket.recv(1024)
             encontrado = ("./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
@@ -152,7 +153,8 @@ if __name__ == "__main__":
             print 'Recibido -- ', data
 
     elif METODO == "BYE":
-        recibido = "Received from " + IP + ":" + PORT + ":" + "SIP/2.0 200 OK"
+        recibido = ("Received from " + IP + ":" + str(PORT) + ":" +
+                    "SIP/2.0 200 OK")
         MensajesLog(recibido)
         sys.exit()
     print "Terminando socket..."
