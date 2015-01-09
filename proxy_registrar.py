@@ -112,7 +112,6 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
                 MensajesLog(enviado)
 
                 try:
-                    print "111111111111111111"
                     data = my_socket.recv(1024)
                     print 'Recibido -- ', data
                 except socket.error:
