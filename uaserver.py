@@ -39,7 +39,7 @@ class ServerHandler(ContentHandler):
             self.uaserver_ip = atributo.get("ip", "127.0.0.1")
             self.uaserver_puerto = atributo.get("puerto", "")
         elif etiqueta == "rtpaudio":
-            self.rtp_puerto = atributo.get("puerto", "")
+            self.rtpaudio_puerto = atributo.get("puerto", "")
         elif etiqueta == "regproxy":
             self.regproxy_ip = atributo.get("ip", "")
             self.regproxy_puerto = atributo.get("puerto", "")
@@ -52,25 +52,31 @@ class ServerHandler(ContentHandler):
 class EchoHandler(SocketServer.DatagramRequestHandler):
 
     def handle(self):
+        print "hola"
         line = self.rfile.read()
+        print line
         line2 = line.split(" ")
+        print line2
         IP = cHandler.regproxy_ip
         PORT = int(cHandler.regproxy_puerto)
         line2[0] = ['INVITE', 'ACK', 'BYE', 'CANCEL', 'OPTIONS', 'REGISTER']
         print "El cliente nos manda " + line
-
+        print line2[0]
         if line2[0] == "INVITE":
-            recibido = "Received from " + IP + ":" + PORT + ": INVITE"
+            print "4444444444444444444444"
+            recibido = "Received from " + IP + ":" + str(PORT) + ": INVITE"
             MensajesLog(recibido)
-            envio = "Sent to " + IP + ":" + PORT + ": " + "SIP/2.0 100 Trying"
+            envio = ("Sent to " + IP + ":" + str(PORT) + ": " +
+                     "SIP/2.0 100 Trying")
             MensajesLog(envio)
-            envio = "Sent to " + IP + ":" + PORT + ": " + "SIP/2.0 180 Ringing"
+            envio = ("Sent to " + IP + ":" + str(PORT) + ": " +
+                     "SIP/2.0 180 Ringing")
             MensajesLog(envio)
-            envio = ("Sent to " + IP + ":" + PORT + ": " + "SIP/2.0 200 OK " +
-                     "Content-Type: application/sdp" + '\n\n' + "v=0" + '\n' +
-                     "o=" + cHandler.account_username + " " + IP + '\n' +
-                     "s=misesion" + '\n' + "t=0" + '\n' + "m=audio " +
-                     cHandler.rtpaudio_puerto + " RTP")
+            envio = ("Sent to " + IP + ":" + str(PORT) + ": " +
+                     "SIP/2.0 200 OK " + "Content-Type: application/sdp" +
+                     '\n\n' + "v=0" + '\n' + "o=" + cHandler.account_username +
+                     " " + IP + '\n' + "s=misesion" + '\n' + "t=0" + '\n' +
+                     "m=audio " + cHandler.rtpaudio_puerto + " RTP")
             MensajesLog(envio)
             SDP = ("Content-Type: application/sdp" + '\r\n' + "v=0" + '\n' +
                    "o=" + cHandler.account_username + " " + IP + '\n' +
@@ -81,14 +87,16 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                              "SIP/2.0 200 OK" + '\r\n\r\n' + SDP)
 
         elif line2[0] == "BYE":
-            recibido = "Received from " + IP + ":" + PORT + ": BYE"
+            print "5555555555555555555555"
+            recibido = "Received from " + IP + ":" + str(PORT) + ": BYE"
             MensajesLog(recibido)
-            envio = "Sent to " + IP + ":" + PORT + ": " + "SIP/2.0 200 OK"
+            envio = "Sent to " + IP + ":" + str(PORT) + ": " + "SIP/2.0 200 OK"
             MensajesLog(envio)
             self.wfile.write("SIP/2.0 200 OK" + '\r\n\r\n')
 
         elif line2[0] == "ACK":
-            recibido = "Received from " + IP + ":" + PORT + ": ACK"
+            print "33333333333333333333"
+            recibido = "Received from " + IP + ":" + str(PORT) + ": ACK"
             MensajesLog(recibido)
             encontrado = ("./mp32rtp -i " + cHandler.uaserver_ip + " -p " +
                           cHandler.rtpaudio_puerto + " < " +
@@ -104,17 +112,21 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
             print 'Recibido -- ', data
 
         elif line2[0] != "INVITE" and line2[0] != "BYE" and line2[0] != "ACK":
-            recibido = "Received from " + IP + ":" + PORT + ": " + line2[0]
+            print "222222222222222222"
+            recibido = ("Received from " + IP + ":" + str(PORT) + ": " +
+                        line2[0])
             MensajesLog(recibido)
-            envio = ("Sent to " + IP + ":" + PORT + ": " +
+            envio = ("Sent to " + IP + ":" + str(PORT) + ": " +
                      "SIP/2.0 405 Method Not Allowed")
             MensajesLog(envio)
             self.wfile.write("SIP/2.0 405 Method Not Allowed" + '\r\n\r\n')
 
         else:
-            recibido = "Received from " + IP + ":" + PORT + ": " + line2[0]
+            print "111111111111111111"
+            recibido = ("Received from " + IP + ":" + str(PORT) + ": " +
+                        line2[0])
             MensajesLog(recibido)
-            envio = ("Sent to " + IP + ":" + PORT + ": " +
+            envio = ("Sent to " + IP + ":" + str(PORT) + ": " +
                      "SIP/2.0 400 Bad Request")
             MensajesLog(envio)
             self.wfile.write("SIP/2.0 400 Bad Request" + '\r\n\r\n')
@@ -124,7 +136,7 @@ class EchoHandler(SocketServer.DatagramRequestHandler):
                 break
 
 if __name__ == "__main__":
-    # parseamos el archivo ua2.xml
+    # parseamos el archivo .xml
     parser = make_parser()
     cHandler = ServerHandler()
     parser.setContentHandler(cHandler)
@@ -137,6 +149,6 @@ if __name__ == "__main__":
         print comienzo
         MensajesLog(comienzo)
 
-    serv = SocketServer.UDPServer((cHandler.uaserver_ip,
+    serv = SocketServer.UDPServer((str(cHandler.uaserver_ip),
                                    int(cHandler.uaserver_puerto)), EchoHandler)
     serv.serve_forever()
