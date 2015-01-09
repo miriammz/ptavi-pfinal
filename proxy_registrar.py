@@ -63,6 +63,7 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
         line2 = line.split(" ")
         line3 = line.split(":")
         IP = str(self.client_address[0])
+        PUERTO_UA = str(self.client_address[1])
         cliente = line2[1].split(":")[1]
         self.dicc[cliente] = IP
         hora_actual = time.time()
@@ -94,23 +95,24 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
 
         elif line2[0] == "INVITE":
             encontrado = False
+            PORT = int(self.dicc[cliente][1])
             for i in self.dicc:
                 if cliente == i:
                     encontrado = True
 
             if encontrado:
-                recibido = ("Received from " + IP + ":" +
-                            self.dicc[cliente][1] + ": INVITE")
+                recibido = "Received from " + IP + ":" + str(PORT) + ": INVITE"
                 MensajesLog(recibido)
                 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(self.dicc[cliente][1])))
+                my_socket.connect((IP, PORT))
+                print dicc[cliente]
                 my_socket.send(line)
-                enviado = ("Sent to " + IP + ":" + self.dicc[cliente][1] +
-                           ": INVITE")
+                enviado = "Sent to " + IP + ":" + str(PORT) + ": INVITE"
                 MensajesLog(enviado)
 
                 try:
+                    print "111111111111111111"
                     data = my_socket.recv(1024)
                     print 'Recibido -- ', data
                 except socket.error:
@@ -125,8 +127,7 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
                     print "Fin."
 
                 print 'Recibido -- ', data
-                reenviado = ("Resent to " + IP + ":" + self.dicc[cliente][1] +
-                             ": " + data)
+                reenviado = "Resent to " + IP + ":" + str(PORT) + ": " + data
                 MensajesLog(reenviado)
                 print 'Enviando -- ', data
                 self.wfile.write(data)
@@ -135,25 +136,25 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
                 self.wfile.write("SIP/2.0 404 User Not Found" + '\r\n\r\n')
 
         elif line2[0] == "ACK":
-            recibido = ("Received from " + IP + ":" + self.dicc[cliente][1] +
-                        ": ACK")
+            PORT = int(self.dicc[cliente][1])
+            recibido = "Received from " + IP + ":" + str(PORT) + ": ACK"
             MensajesLog(recibido)
             my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            my_socket.connect((IP, self.dicc[cliente][1]))
+            my_socket.connect((IP, PORT))
             my_socket.send(line)
-            enviado = ("Sent to " + IP + ":" + self.dicc[cliente][1] + ": ACK")
+            enviado = "Sent to " + IP + ":" + str(PORT) + ": ACK"
             MensajesLog(enviado)
 
         elif line2[0] == "BYE":
-            recibido = ("Received from " + IP + ":" + self.dicc[cliente][1] +
-                        ": BYE")
+            PORT = int(self.dicc[cliente][1])
+            recibido = "Received from " + IP + ":" + str(PORT) + ": BYE"
             MensajesLog(recibido)
             my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            my_socket.connect((IP, self.dicc[cliente][1]))
+            my_socket.connect((IP, PORT))
             my_socket.send(line)
-            enviado = ("Sent to " + IP + ":" + self.dicc[cliente][1] + ": BYE")
+            enviado = "Sent to " + IP + ":" + str(PORT) + ": BYE"
             MensajesLog(enviado)
 
             try:
@@ -171,8 +172,7 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
                 print "Fin."
 
             print 'Recibido -- ', data
-            reenviado = ("Resent to " + IP + ":" + self.dicc[cliente][1] +
-                         ": " + data)
+            reenviado = "Resent to " + IP + ":" + str(PORT) + ": " + data
             MensajesLog(reenviado)
             print 'Enviando -- ', data
             self.wfile.write(data)
@@ -193,12 +193,11 @@ class ProxyRegistrar(SocketServer.DatagramRequestHandler):
                 print "Fin."
 
             print 'Recibido -- ', data
-            reenviado = ("Resent to " + IP_ + ":" + self.dicc[cliente][1] +
-                         ": " + data)
+            reenviado = "Resent to " + IP_ + ":" + PUERTO_UA + ": " + data
             MensajesLog(reenviado)
             my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            my_socket.connect((IP, self.dicc[cliente][1]))
+            my_socket.connect((IP, PUERTO_UA))
             my_socket.send(data)
             print 'Enviando -- ', data
             self.wfile.write(data)
@@ -214,7 +213,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("Usage: python proxy_registrar.py config")
 
-    # parseamos el archivo ua2.xml
+    # parseamos el archivo .xml
     parser = make_parser()
     cHandler = ProxyHandler()
     parser.setContentHandler(cHandler)
