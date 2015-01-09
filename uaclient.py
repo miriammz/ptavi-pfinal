@@ -52,7 +52,7 @@ class ClientHandler(ContentHandler):
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         sys.exit("Usage: python uaclient.py config method option")
-    # parseamos el archivo ua1.xml
+    # parseamos el archivo .xml
     parser = make_parser()
     cHandler = ClientHandler()
     parser.setContentHandler(cHandler)
